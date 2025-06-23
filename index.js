@@ -30,7 +30,7 @@ function clearBackstopData() {
         'backstop_data/bitmaps_test',
         'backstop_data/html_report'
     ];
-    
+
     dirsToClean.forEach(dir => {
         if (fs.existsSync(dir)) {
             fs.rmSync(dir, { recursive: true, force: true });
@@ -42,6 +42,7 @@ function clearBackstopData() {
 // Function to load and scroll through a page
 async function loadAndScrollPage(scenario) {
     const browser = await puppeteer.launch({
+        executablePath: '/usr/bin/chromium-browser', // or the path to your system's Chrome/Chromium
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
@@ -112,76 +113,76 @@ async function fetchAllRoutes(url) {
         const foundRoutes = new Set(['/']); // Always include homepage
         const visited = new Set();
         const toVisit = new Set(['/']);
-        
+
         console.log('Starting to crawl website for routes...');
-        
+
         const browser = await puppeteer.launch({
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
-        
+
         // Process URLs in batches to avoid opening too many pages
         while (toVisit.size > 0 && visited.size < 100) { // Safety limit of 100 pages
             const currentPath = Array.from(toVisit)[0];
             toVisit.delete(currentPath);
-            
+
             if (visited.has(currentPath)) continue;
             visited.add(currentPath);
-            
+
             try {
                 const fullUrl = baseUrl + currentPath;
                 console.log(`Crawling: ${fullUrl}`);
-                
+
                 const page = await browser.newPage();
                 await page.setDefaultNavigationTimeout(30000); // 30 seconds timeout
-                
+
                 // Navigate to the page and wait for network to be idle
-                await page.goto(fullUrl, { 
+                await page.goto(fullUrl, {
                     waitUntil: 'networkidle2',
                     timeout: 30000
                 });
-                
+
                 // Extract all links from the page
                 const links = await page.evaluate(() => {
                     const anchors = document.querySelectorAll('a[href]');
                     return Array.from(anchors).map(a => a.href);
                 });
-                
+
                 await page.close();
-                
+
                 // Process each link
                 for (const link of links) {
                     try {
                         const linkUrl = new URL(link);
-                        
+
                         // Only process links from the same domain
                         if (linkUrl.hostname !== baseUrlObj.hostname) continue;
-                        
+
                         // Get the pathname and clean it
                         let pathname = linkUrl.pathname;
                         if (!pathname.startsWith('/')) pathname = '/' + pathname;
-                        
+
                         // Skip if it's a file or already processed
                         if (pathname.match(/\.(jpg|jpeg|png|gif|css|js|ico|xml|pdf|doc|docx|txt)$/i)) continue;
                         if (visited.has(pathname)) continue;
-                        
+
                         foundRoutes.add(pathname);
                         toVisit.add(pathname);
                     } catch (e) {
                         console.error(`Error processing link ${link}:`, e.message);
                     }
                 }
-                
+
             } catch (error) {
                 console.error(`Error crawling ${currentPath}:`, error.message);
             }
         }
-        
+
         await browser.close();
-        
+
         const routes = Array.from(foundRoutes);
         console.log(`Found ${routes.length} routes:`, routes);
         return routes;
-        
+
     } catch (error) {
         console.error('Error in fetchAllRoutes:', error.message);
         return ['/'];
@@ -235,7 +236,8 @@ function generateBackstopConfig(prodUrl, stagingUrl, routes) {
         report: ["browser"],
         engine: "puppeteer",
         engineOptions: {
-            args: ["--no-sandbox"]
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            executablePath: '/usr/bin/chromium-browser'
         },
         asyncCaptureLimit: 5,
         asyncCompareLimit: 50,
@@ -252,17 +254,17 @@ app.post('/api/test', async (req, res) => {
     isTestRunning = true;
     try {
         const { prodUrl, stagingUrl } = req.body;
-        
+
         if (!prodUrl || !stagingUrl) {
             return res.status(400).json({ error: 'Both production and staging URLs are required' });
         }
 
         // Clear existing data and ensure directories
         clearBackstopData();
-        
+
         io.emit('status', 'Finding all routes...');
         const routes = await fetchAllRoutes(prodUrl);
-        
+
         if (routes.length === 0) {
             throw new Error('No routes found');
         }
@@ -273,25 +275,25 @@ app.post('/api/test', async (req, res) => {
         for (const route of routes) {
             const prodScenario = { url: prodUrl + route };
             const stagingScenario = { url: stagingUrl + route };
-            
+
             io.emit('status', `Pre-rendering: ${route}`);
-            
+
             // Pre-render both production and staging pages
             await loadAndScrollPage(prodScenario);
             await loadAndScrollPage(stagingScenario);
         }
 
         io.emit('status', 'All pages pre-rendered. Generating config...');
-        
+
         // Generate and write config
         const config = generateBackstopConfig(prodUrl, stagingUrl, routes);
         const configContent = `module.exports = ${JSON.stringify(config, null, 2)};`;
         fs.writeFileSync('backstop.config.js', configContent);
-        
+
         // Create reference images
         io.emit('status', 'Creating reference images...');
         const reference = spawn('npx', ['backstop', 'reference', '--config=backstop.config.js']);
-        
+
         reference.stdout.on('data', (data) => {
             const message = data.toString();
             io.emit('status', message);
@@ -305,10 +307,10 @@ app.post('/api/test', async (req, res) => {
         reference.on('close', async (code) => {
             if (code === 0) {
                 await new Promise(resolve => setTimeout(resolve, 2000));
-                
+
                 io.emit('status', 'Reference images created. Starting comparison...');
                 const test = spawn('npx', ['backstop', 'test', '--config=backstop.config.js']);
-                
+
                 test.stdout.on('data', (data) => {
                     const message = data.toString();
                     io.emit('status', message);
@@ -378,7 +380,7 @@ app.post('/api/test-excel', async (req, res) => {
         io.emit('status', 'Preparing scenarios from Excel URLs...');
         // Generate scenarios for BackstopJS
         const scenarios = urls.map((url, i) => ({
-            label: `ExcelURL${i+1}`,
+            label: `ExcelURL${i + 1}`,
             url,
             referenceUrl: url,
             selectors: ["document"],
@@ -441,7 +443,7 @@ app.post('/api/test-excel', async (req, res) => {
 // Generate mock results data (replace with actual BackstopJS results parsing)
 function generateResultsData(routes, viewports) {
     const results = {};
-    
+
     viewports.forEach(viewport => {
         results[viewport.label] = routes.map(route => {
             const routeLabel = route === '/' ? 'home' : route.replace(/[^a-zA-Z0-9]/g, '_');
@@ -457,7 +459,7 @@ function generateResultsData(routes, viewports) {
             };
         });
     });
-    
+
     return results;
 }
 
@@ -484,7 +486,7 @@ app.get('/api/health', (req, res) => {
 // Socket connection handling
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
-    
+
     socket.on('disconnect', () => {
         console.log('Client disconnected:', socket.id);
     });
@@ -494,7 +496,7 @@ const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
     console.log(`🚀 Visual Regression Testing Server running on port ${PORT}`);
     console.log(`📊 Open http://localhost:${PORT} to start testing`);
-    
+
     // Ensure BackstopJS is installed
     const { exec } = require('child_process');
     exec('npx backstop --version', (error, stdout, stderr) => {
