@@ -1,16 +1,6 @@
 module.exports = {
-  "id": "visual_regression_test",
+  "id": "excel_url_test",
   "viewports": [
-    {
-      "label": "phone",
-      "width": 375,
-      "height": 667
-    },
-    {
-      "label": "tablet",
-      "width": 1024,
-      "height": 768
-    },
     {
       "label": "desktop",
       "width": 1920,
@@ -18,7 +8,58 @@ module.exports = {
     }
   ],
   "scenarios": [
-
+    {
+      "label": "ExcelURL1",
+      "url": "https://staging.deeporion.com/",
+      "referenceUrl": "https://staging.deeporion.com/",
+      "selectors": [
+        "document"
+      ],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": true,
+      "waitForSelector": "body",
+      "delay": 2000,
+      "postInteractionWait": 1000
+    },
+    {
+      "label": "ExcelURL2",
+      "url": "https://deeporion.com/",
+      "referenceUrl": "https://deeporion.com/",
+      "selectors": [
+        "document"
+      ],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": true,
+      "waitForSelector": "body",
+      "delay": 2000,
+      "postInteractionWait": 1000
+    },
+    {
+      "label": "ExcelURL3",
+      "url": "https://staging.deeporion.com/about",
+      "referenceUrl": "https://staging.deeporion.com/about",
+      "selectors": [
+        "document"
+      ],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": true,
+      "waitForSelector": "body",
+      "delay": 2000,
+      "postInteractionWait": 1000
+    },
+    {
+      "label": "ExcelURL4",
+      "url": "https://deeporion.com/about",
+      "referenceUrl": "https://deeporion.com/about",
+      "selectors": [
+        "document"
+      ],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": true,
+      "waitForSelector": "body",
+      "delay": 2000,
+      "postInteractionWait": 1000
+    }
   ],
   "paths": {
     "bitmaps_reference": "backstop_data/bitmaps_reference",

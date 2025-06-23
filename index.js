@@ -513,7 +513,6 @@ http.listen(PORT, () => {
         }
     });
 });
-
 function isValidHttpUrl(string) {
     let url;
     try {
@@ -525,10 +524,4 @@ function isValidHttpUrl(string) {
 }
 
 // When reading from Excel:
-if (
-    row[0] && row[1] &&
-    isValidHttpUrl(row[0]) &&
-    isValidHttpUrl(row[1])
-) {
-    urlPairs.push({ url: row[0], referenceUrl: row[1] });
-}
+
