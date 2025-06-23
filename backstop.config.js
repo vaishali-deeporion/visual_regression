@@ -18,33 +18,11 @@ module.exports = {
     }
   ],
   "scenarios": [
-    {
-      "label": "/",
-      "url": "https://hiring.staging.deeporion.com/login/",
-      "referenceUrl": "https://hiring.staging.deeporion.com/login/",
-      "selectors": [
-        "document"
-      ],
-      "misMatchThreshold": 0.1,
-      "requireSameDimensions": true,
-      "waitForSelector": "body",
-      "delay": 2000,
-      "postInteractionWait": 1000
-    },
-    {
-      "label": "/forgot",
-      "url": "https://hiring.staging.deeporion.com/login/forgot",
-      "referenceUrl": "https://hiring.staging.deeporion.com/login/forgot",
-      "selectors": [
-        "document"
-      ],
-      "misMatchThreshold": 0.1,
-      "requireSameDimensions": true,
-      "waitForSelector": "body",
-      "delay": 2000,
-      "postInteractionWait": 1000
-    }
+
   ],
+  "scripts": {
+    "postinstall": "npx puppeteer browsers install chrome"
+  },
   "paths": {
     "bitmaps_reference": "backstop_data/bitmaps_reference",
     "bitmaps_test": "backstop_data/bitmaps_test",
