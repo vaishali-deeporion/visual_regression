@@ -237,7 +237,6 @@ function generateBackstopConfig(prodUrl, stagingUrl, routes) {
         engine: "puppeteer",
         engineOptions: {
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
-            executablePath: '/usr/bin/chromium-browser'
         },
         asyncCaptureLimit: 5,
         asyncCompareLimit: 50,
@@ -514,3 +513,22 @@ http.listen(PORT, () => {
         }
     });
 });
+
+function isValidHttpUrl(string) {
+    let url;
+    try {
+        url = new URL(string);
+    } catch (_) {
+        return false;
+    }
+    return url.protocol === "http:" || url.protocol === "https:";
+}
+
+// When reading from Excel:
+if (
+    row[0] && row[1] &&
+    isValidHttpUrl(row[0]) &&
+    isValidHttpUrl(row[1])
+) {
+    urlPairs.push({ url: row[0], referenceUrl: row[1] });
+}
