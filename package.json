@@ -5,9 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "postinstall": "npx puppeteer browsers install chrome",
-    "install-chrome": "npx puppeteer browsers install chrome",
-    "setup": "npm install && npx puppeteer browsers install chrome"
+    "postinstall": "mkdir -p ~/.cache/puppeteer && npx puppeteer browsers install chrome --cache-dir=~/.cache/puppeteer",
+    "install-chrome": "mkdir -p ~/.cache/puppeteer && npx puppeteer browsers install chrome --cache-dir=~/.cache/puppeteer",
+    "setup": "npm install && mkdir -p ~/.cache/puppeteer && npx puppeteer browsers install chrome --cache-dir=~/.cache/puppeteer",
+    "test-build": "chmod +x build-test.sh && ./build-test.sh",
+    "predeploy": "npm run test-build"
   },
   "keywords": [],
   "author": "",
