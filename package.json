@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "postinstall": "npx puppeteer browsers install chrome"
+    "postinstall": "npx puppeteer browsers install chrome",
+    "install-chrome": "npx puppeteer browsers install chrome",
+    "setup": "npm install && npx puppeteer browsers install chrome"
   },
   "keywords": [],
   "author": "",

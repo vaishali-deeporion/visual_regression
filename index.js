@@ -8,6 +8,7 @@ const { spawn } = require('child_process');
 const puppeteer = require('puppeteer');
 const multer = require('multer');
 const XLSX = require('xlsx');
+
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
@@ -42,8 +43,20 @@ function clearBackstopData() {
 // Function to load and scroll through a page
 async function loadAndScrollPage(scenario) {
     const browser = await puppeteer.launch({
-        // executablePath: '/usr/bin/chromium-browser', // or the path to your system's Chrome/Chromium
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        headless: true,
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor'
+        ]
     });
     const page = await browser.newPage();
 
@@ -117,7 +130,20 @@ async function fetchAllRoutes(url) {
         console.log('Starting to crawl website for routes...');
 
         const browser = await puppeteer.launch({
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            headless: true,
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--no-first-run',
+                '--no-zygote',
+                '--single-process',
+                '--disable-gpu',
+                '--disable-web-security',
+                '--disable-features=VizDisplayCompositor'
+            ]
         });
 
         // Process URLs in batches to avoid opening too many pages
@@ -236,7 +262,16 @@ function generateBackstopConfig(prodUrl, stagingUrl, routes) {
         report: ["browser"],
         engine: "puppeteer",
         engineOptions: {
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--no-first-run',
+                '--no-zygote',
+                '--single-process',
+                '--disable-gpu'
+            ],
         },
         asyncCaptureLimit: 5,
         asyncCompareLimit: 50,
@@ -404,7 +439,18 @@ app.post('/api/test-excel', async (req, res) => {
             },
             report: ["browser"],
             engine: "puppeteer",
-            engineOptions: { args: ["--no-sandbox"] },
+            engineOptions: { 
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-accelerated-2d-canvas',
+                    '--no-first-run',
+                    '--no-zygote',
+                    '--single-process',
+                    '--disable-gpu'
+                ]
+            },
             asyncCaptureLimit: 5,
             asyncCompareLimit: 50,
             debug: false,
