@@ -42,7 +42,7 @@ function clearBackstopData() {
 // Function to load and scroll through a page
 async function loadAndScrollPage(scenario) {
     const browser = await puppeteer.launch({
-        executablePath: '/usr/bin/chromium-browser', // or the path to your system's Chrome/Chromium
+        // executablePath: '/usr/bin/chromium-browser', // or the path to your system's Chrome/Chromium
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
